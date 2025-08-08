@@ -7,7 +7,7 @@ const footerNavigation = {
   product: [
     { name: "Pricing", href: "/pricing" },
     { name: "Roadmap", href: "/roadmap" },
-    { name: "Blog", href: "/blog" },
+    { name: "Content", href: "/content" },
   ],
   company: [
     { name: "About", href: "/#about" },

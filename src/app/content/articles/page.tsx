@@ -1,7 +1,7 @@
 import { sanityClient, urlFor } from '@/lib/sanity'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Calendar, User, Tag } from 'lucide-react'
+import { ArrowRight, Calendar, User, ArrowLeft } from 'lucide-react'
 
 // GROQ query to get all published posts with author and category data
 const postsQuery = `
@@ -31,7 +31,7 @@ const postsQuery = `
   }
 `
 
-export default async function BlogPage() {
+export default async function ArticlesPage() {
   const posts = await sanityClient.fetch(postsQuery)
 
   return (
@@ -40,29 +40,37 @@ export default async function BlogPage() {
       <section className="py-20 sm:py-32 bg-gradient-to-br from-background via-background to-muted/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
+            <div className="flex justify-center mb-6">
+              <Link href="/content">
+                <Button variant="ghost" className="mb-4">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Content
+                </Button>
+              </Link>
+            </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mb-6">
-              Endflow <span className="text-primary">Blog</span>
+              Endflow <span className="text-primary">Articles</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Insights, tips, and strategies for building better GTM data pipelines
+              Deep insights, strategies, and tips for building better GTM data pipelines
             </p>
           </div>
         </div>
       </section>
 
-      {/* Blog Posts Grid */}
-      <section className="py-20 sm:py-32">
+      {/* Articles Grid */}
+      <section className="py-12 sm:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-7xl">
             {posts.length === 0 ? (
               <div className="text-center py-20">
-                <h2 className="text-2xl font-bold mb-4">No posts yet</h2>
+                <h2 className="text-2xl font-bold mb-4">No articles yet</h2>
                 <p className="text-muted-foreground mb-8">
                   We're working on some great content. Check back soon!
                 </p>
                 <Link href="/studio">
                   <Button>
-                    Add Your First Post
+                    Add Your First Article
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -107,11 +115,11 @@ export default async function BlogPage() {
                       )}
 
                       {/* Title */}
-                      <h2 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
-                        <Link href={`/blog/${post.slug.current}`}>
-                          {post.title}
-                        </Link>
-                      </h2>
+                                              <h2 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
+                          <Link href={`/content/${post.slug.current}`}>
+                            {post.title}
+                          </Link>
+                        </h2>
 
                       {/* Excerpt */}
                       <p className="text-muted-foreground mb-4 line-clamp-3">
@@ -143,12 +151,12 @@ export default async function BlogPage() {
                         </div>
 
                         {/* Read More */}
-                        <Link href={`/blog/${post.slug.current}`}>
-                          <Button variant="ghost" size="sm" className="group-hover:text-primary">
-                            Read More
-                            <ArrowRight className="ml-1 h-4 w-4" />
-                          </Button>
-                        </Link>
+                                                  <Link href={`/content/${post.slug.current}`}>
+                            <Button variant="ghost" size="sm" className="group-hover:text-primary">
+                              Read More
+                              <ArrowRight className="ml-1 h-4 w-4" />
+                            </Button>
+                          </Link>
                       </div>
                     </div>
                   </article>
@@ -160,4 +168,4 @@ export default async function BlogPage() {
       </section>
     </div>
   )
-}
+} 

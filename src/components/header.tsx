@@ -12,7 +12,7 @@ const navigation = [
   { name: "Home", href: "/" },
   { name: "Pricing", href: "/pricing" },
   { name: "Roadmap", href: "/roadmap" },
-  { name: "Blog", href: "/blog" },
+  { name: "Content", href: "/content" },
 ];
 
 export function Header() {
