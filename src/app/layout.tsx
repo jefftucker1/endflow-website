@@ -95,6 +95,16 @@ export default function RootLayout({
         </main>
         <Footer />
         <ConsentBanner />
+        
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe 
+            src="https://www.googletagmanager.com/ns.html?id=GTM-PTFRDGS3"
+            height="0" 
+            width="0" 
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
       </body>
     </html>
   );

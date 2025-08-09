@@ -3,6 +3,72 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Calendar, User, ArrowLeft } from 'lucide-react'
 
+// Helper function to extract plain text from PortableText
+const getPlainTextFromPortableText = (content: any[]): string => {
+  if (!content || !Array.isArray(content)) return ''
+  
+  return content
+    .map((block) => {
+      if (block._type === 'block' && block.children) {
+        return block.children
+          .filter((child: any) => child._type === 'span')
+          .map((child: any) => child.text)
+          .join('')
+      }
+      return ''
+    })
+    .join(' ')
+    .trim()
+}
+
+// Helper function to clean markdown formatting from text
+const cleanMarkdownText = (text: string): string => {
+  if (!text) return ''
+  
+  return text
+    // Remove bold (**text** or __text__)
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    // Remove italic (*text* or _text_)
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/_(.*?)_/g, '$1')
+    // Remove headers (# ## ### etc.)
+    .replace(/^#{1,6}\s+/gm, '')
+    // Remove links [text](url)
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+    // Remove inline code `code`
+    .replace(/`([^`]+)`/g, '$1')
+    // Remove strikethrough ~~text~~
+    .replace(/~~(.*?)~~/g, '$1')
+    // Remove extra whitespace and line breaks
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+// Helper function to create excerpt from content or use existing excerpt
+const createExcerpt = (post: any): string => {
+  // Check if excerpt exists and clean it of markdown
+  if (post.excerpt && typeof post.excerpt === 'string') {
+    const cleanedExcerpt = cleanMarkdownText(post.excerpt)
+    if (cleanedExcerpt && cleanedExcerpt.length > 0) {
+      return cleanedExcerpt.length > 160 
+        ? cleanedExcerpt.substring(0, 160) + '...'
+        : cleanedExcerpt
+    }
+  }
+  
+  // Otherwise, extract from content
+  if (post.content) {
+    const plainText = getPlainTextFromPortableText(post.content)
+    const cleanedText = cleanMarkdownText(plainText)
+    return cleanedText.length > 160 
+      ? cleanedText.substring(0, 160) + '...'
+      : cleanedText
+  }
+  
+  return 'Read more to discover insights...'
+}
+
 // GROQ query to get all published posts with author and category data
 const postsQuery = `
   *[_type == "post" && publishedAt <= now()] | order(publishedAt desc) {
@@ -10,6 +76,7 @@ const postsQuery = `
     title,
     slug,
     excerpt,
+    content,
     publishedAt,
     mainImage,
     "author": author->{
@@ -99,17 +166,19 @@ export default async function ArticlesPage() {
                       {post.categories && post.categories.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-4">
                           {post.categories.slice(0, 2).map((category: any) => (
-                            <span
-                              key={category.slug.current}
-                              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
-                              style={{
-                                backgroundColor: category.color ? `${category.color}20` : undefined,
-                                color: category.color || undefined
-                              }}
-                            >
-                              {category.icon && <span className="mr-1">{category.icon}</span>}
-                              {category.title}
-                            </span>
+                            category && (
+                              <span
+                                key={category.slug?.current || category.title}
+                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
+                                style={{
+                                  backgroundColor: category.color ? `${category.color}20` : undefined,
+                                  color: category.color || undefined
+                                }}
+                              >
+                                {category.icon && <span className="mr-1">{category.icon}</span>}
+                                {category.title}
+                              </span>
+                            )
                           ))}
                         </div>
                       )}
@@ -123,7 +192,7 @@ export default async function ArticlesPage() {
 
                       {/* Excerpt */}
                       <p className="text-muted-foreground mb-4 line-clamp-3">
-                        {post.excerpt}
+                        {createExcerpt(post)}
                       </p>
 
                       {/* Meta Information */}

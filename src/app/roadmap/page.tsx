@@ -241,70 +241,70 @@ export default function RoadmapPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+              className="space-y-8"
             >
-              {/* Features Column */}
-              <div className="lg:col-span-2">
-                <div className="bg-card rounded-xl p-8 border border-border h-full">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-4xl">{selectedData.icon}</div>
-                      <div>
-                        <h2 className="text-2xl font-bold">{selectedData.title}</h2>
-                        <p className="text-muted-foreground">{selectedData.description}</p>
+              {/* Top Row: Features and Metrics */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Features Column */}
+                <div className="lg:col-span-2">
+                  <div className="bg-card rounded-xl p-8 border border-border h-full">
+                    <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center space-x-4">
+                        <div className="text-4xl">{selectedData.icon}</div>
+                        <div>
+                          <h2 className="text-2xl font-bold">{selectedData.title}</h2>
+                          <p className="text-muted-foreground">{selectedData.description}</p>
+                        </div>
+                      </div>
+                      <div className={`
+                        px-4 py-2 rounded-full text-sm font-medium
+                        ${selectedData.status === 'live' 
+                          ? 'bg-green-500/10 text-green-500' 
+                          : 'bg-yellow-500/10 text-yellow-500'}
+                      `}>
+                        {selectedData.status === 'live' ? 'Live Now' : selectedData.launchDate}
                       </div>
                     </div>
-                    <div className={`
-                      px-4 py-2 rounded-full text-sm font-medium
-                      ${selectedData.status === 'live' 
-                        ? 'bg-green-500/10 text-green-500' 
-                        : 'bg-yellow-500/10 text-yellow-500'}
-                    `}>
-                      {selectedData.status === 'live' ? 'Live Now' : selectedData.launchDate}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {selectedData.features.map((feature, index) => (
+                        <motion.div
+                          key={feature.name}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                          className={`
+                            p-4 rounded-lg border
+                            ${feature.status === 'completed'
+                              ? 'bg-green-500/5 border-green-500/20'
+                              : feature.status === 'inProgress'
+                              ? 'bg-yellow-500/5 border-yellow-500/20'
+                              : 'bg-muted/30 border-border'}
+                          `}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{feature.name}</span>
+                            <div className={`
+                              text-xs px-2 py-1 rounded-full
+                              ${feature.status === 'completed'
+                                ? 'bg-green-500/10 text-green-500'
+                                : feature.status === 'inProgress'
+                                ? 'bg-yellow-500/10 text-yellow-500'
+                                : 'bg-muted text-muted-foreground'}
+                            `}>
+                              {feature.status === 'completed' 
+                                ? 'Live' 
+                                : feature.status === 'inProgress'
+                                ? 'In Progress'
+                                : 'Coming Soon'}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {selectedData.features.map((feature, index) => (
-                      <motion.div
-                        key={feature.name}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                        className={`
-                          p-4 rounded-lg border
-                          ${feature.status === 'completed'
-                            ? 'bg-green-500/5 border-green-500/20'
-                            : feature.status === 'inProgress'
-                            ? 'bg-yellow-500/5 border-yellow-500/20'
-                            : 'bg-muted/30 border-border'}
-                        `}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">{feature.name}</span>
-                          <div className={`
-                            text-xs px-2 py-1 rounded-full
-                            ${feature.status === 'completed'
-                              ? 'bg-green-500/10 text-green-500'
-                              : feature.status === 'inProgress'
-                              ? 'bg-yellow-500/10 text-yellow-500'
-                              : 'bg-muted text-muted-foreground'}
-                          `}>
-                            {feature.status === 'completed' 
-                              ? 'Live' 
-                              : feature.status === 'inProgress'
-                              ? 'In Progress'
-                              : 'Coming Soon'}
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
                 </div>
-              </div>
 
-              {/* Metrics & Benefits Column */}
-              <div className="space-y-8">
                 {/* Metrics Card */}
                 <div className="bg-card rounded-xl p-8 border border-border">
                   <h3 className="text-lg font-bold mb-6">Key Metrics</h3>
@@ -327,7 +327,10 @@ export default function RoadmapPage() {
                     </div>
                   </div>
                 </div>
+              </div>
 
+              {/* Bottom Row: Benefits and CTA */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Benefits Card */}
                 <div className="bg-card rounded-xl p-8 border border-border">
                   <h3 className="text-lg font-bold mb-6">Key Benefits</h3>

@@ -46,9 +46,11 @@ const slugsQuery = `
 
 export async function generateStaticParams() {
   const posts = await sanityClient.fetch(slugsQuery)
-  return posts.map((post: any) => ({
-    slug: post.slug.current,
-  }))
+  return posts
+    .filter((post: any) => post.slug && post.slug.current)
+    .map((post: any) => ({
+      slug: post.slug.current,
+    }))
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
@@ -58,7 +60,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     notFound()
   }
 
-  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://endflow.com'}/blog/${post.slug.current}`
+  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://endflow.com'}/content/${post.slug.current}`
   const shareText = encodeURIComponent(post.title)
 
   return (
@@ -66,10 +68,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       {/* Back to Blog */}
       <section className="py-8 border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/blog">
+          <Link href="/content">
             <Button variant="ghost" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Blog
+              Back to Content
             </Button>
           </Link>
         </div>
@@ -82,23 +84,25 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             {/* Categories */}
             {post.categories && post.categories.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
-                {post.categories.map((category: any) => (
-                  <Link
-                    key={category.slug.current}
-                    href={`/blog/category/${category.slug.current}`}
-                  >
-                    <span
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                      style={{
-                        backgroundColor: category.color ? `${category.color}20` : undefined,
-                        color: category.color || undefined
-                      }}
+                {post.categories
+                  .filter((category: any) => category && category.slug && category.slug.current)
+                  .map((category: any) => (
+                    <Link
+                      key={category.slug.current}
+                      href={`/content/category/${category.slug.current}`}
                     >
-                      {category.icon && <span className="mr-2">{category.icon}</span>}
-                      {category.title}
-                    </span>
-                  </Link>
-                ))}
+                      <span
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        style={{
+                          backgroundColor: category.color ? `${category.color}20` : undefined,
+                          color: category.color || undefined
+                        }}
+                      >
+                        {category.icon && <span className="mr-2">{category.icon}</span>}
+                        {category.title}
+                      </span>
+                    </Link>
+                  ))}
               </div>
             )}
 
@@ -193,7 +197,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       <section className="py-12 sm:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl">
-            <article className="prose prose-lg max-w-none">
+            <article className="prose prose-lg prose-gray max-w-none dark:prose-invert">
               <PortableText
                 value={post.content}
                 components={{
@@ -203,19 +207,87 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                         <img
                           src={urlFor(value).width(800).url()}
                           alt={value.alt || ''}
-                          className="w-full h-auto rounded-lg"
+                          className="w-full h-auto rounded-lg shadow-lg"
                         />
                         {value.caption && (
-                          <p className="text-sm text-muted-foreground text-center mt-2">
+                          <p className="text-sm text-muted-foreground text-center mt-2 italic">
                             {value.caption}
                           </p>
                         )}
                       </div>
                     ),
-                    code: ({ value }) => (
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
-                        <code>{value.code}</code>
-                      </pre>
+                    codeBlock: ({ value }) => (
+                      <div className="my-6">
+                        {value.filename && (
+                          <div className="bg-muted px-4 py-2 text-sm font-mono border-b border-border rounded-t-lg">
+                            {value.filename}
+                          </div>
+                        )}
+                        <pre className={`bg-muted p-4 overflow-x-auto ${value.filename ? 'rounded-b-lg' : 'rounded-lg'}`}>
+                          <code className={`language-${value.code?.language || 'text'}`}>
+                            {value.code?.code || value.code}
+                          </code>
+                        </pre>
+                      </div>
+                    ),
+                  },
+                  block: {
+                    h1: ({ children }) => (
+                      <h1 className="text-4xl font-bold tracking-tight mb-6 mt-8">{children}</h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="text-3xl font-bold tracking-tight mb-4 mt-8">{children}</h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="text-2xl font-bold tracking-tight mb-4 mt-6">{children}</h3>
+                    ),
+                    h4: ({ children }) => (
+                      <h4 className="text-xl font-bold mb-3 mt-6">{children}</h4>
+                    ),
+                    normal: ({ children }) => (
+                      <p className="text-lg leading-relaxed mb-6 text-foreground">{children}</p>
+                    ),
+                    blockquote: ({ children }) => (
+                      <blockquote className="border-l-4 border-primary pl-6 py-2 my-6 bg-muted/30 rounded-r-lg">
+                        <div className="text-lg italic text-muted-foreground">{children}</div>
+                      </blockquote>
+                    ),
+                  },
+                  list: {
+                    bullet: ({ children }) => (
+                      <ul className="list-disc list-inside space-y-2 mb-6 ml-4">{children}</ul>
+                    ),
+                    number: ({ children }) => (
+                      <ol className="list-decimal list-inside space-y-2 mb-6 ml-4">{children}</ol>
+                    ),
+                  },
+                  listItem: {
+                    bullet: ({ children }) => (
+                      <li className="text-lg leading-relaxed">{children}</li>
+                    ),
+                    number: ({ children }) => (
+                      <li className="text-lg leading-relaxed">{children}</li>
+                    ),
+                  },
+                  marks: {
+                    strong: ({ children }) => (
+                      <strong className="font-bold text-foreground">{children}</strong>
+                    ),
+                    em: ({ children }) => (
+                      <em className="italic">{children}</em>
+                    ),
+                    code: ({ children }) => (
+                      <code className="bg-muted px-2 py-1 rounded text-sm font-mono">{children}</code>
+                    ),
+                    link: ({ children, value }) => (
+                      <a
+                        href={value.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 underline underline-offset-2"
+                      >
+                        {children}
+                      </a>
                     ),
                   },
                 }}
@@ -235,16 +307,18 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 <span className="text-sm font-medium text-muted-foreground">Tags:</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag: any) => (
-                  <Link
-                    key={tag.slug.current}
-                    href={`/blog/tag/${tag.slug.current}`}
-                  >
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">
-                      #{tag.title}
-                    </span>
-                  </Link>
-                ))}
+                {post.tags
+                  .filter((tag: any) => tag && tag.slug && tag.slug.current)
+                  .map((tag: any) => (
+                    <Link
+                      key={tag.slug.current}
+                      href={`/content/tag/${tag.slug.current}`}
+                    >
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">
+                        #{tag.title}
+                      </span>
+                    </Link>
+                  ))}
               </div>
             </div>
           </div>

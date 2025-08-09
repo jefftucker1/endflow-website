@@ -75,6 +75,21 @@ export function trackGA4(event: TrackingEvent) {
   }
 }
 
+// Google Ads conversion tracking
+export function trackGoogleAdsConversion(conversionId: string, conversionLabel?: string, value?: number) {
+  if (typeof window !== 'undefined' && (window as any).gtag && typeof (window as any).gtag === 'function') {
+    try {
+      (window as any).gtag('event', 'conversion', {
+        send_to: `AW-17449356340/${conversionId}${conversionLabel ? `/${conversionLabel}` : ''}`,
+        value: value,
+        currency: 'USD',
+      });
+    } catch (error) {
+      console.warn('Google Ads conversion tracking error:', error);
+    }
+  }
+}
+
 // Facebook/Meta Pixel tracking
 export function trackFacebookPixel(event: TrackingEvent) {
   if (typeof window !== 'undefined' && (window as any).fbq && typeof (window as any).fbq === 'function') {
@@ -233,12 +248,16 @@ export const trackingEvents = {
     label: 'signup_form',
   }),
 
-  signupCompleted: (credits: number) => trackEvent({
-    action: 'signup_completed',
-    category: 'conversion',
-    label: 'account_created',
-    value: credits,
-  }),
+  signupCompleted: (credits: number) => {
+    trackEvent({
+      action: 'signup_completed',
+      category: 'conversion',
+      label: 'account_created',
+      value: credits,
+    });
+    // Google Ads conversion tracking
+    trackGoogleAdsConversion('YOUR_SIGNUP_CONVERSION_ID', 'YOUR_SIGNUP_CONVERSION_LABEL', credits);
+  },
 
   creditsClaimedClaimed: (credits: number) => trackEvent({
     action: 'credits_claimed',
@@ -281,11 +300,15 @@ export const trackingEvents = {
     label: title,
   }),
 
-  pricingPageViewed: () => trackEvent({
-    action: 'pricing_page_viewed',
-    category: 'engagement',
-    label: 'pricing_interest',
-  }),
+  pricingPageViewed: () => {
+    trackEvent({
+      action: 'pricing_page_viewed',
+      category: 'engagement',
+      label: 'pricing_interest',
+    });
+    // Google Ads conversion tracking for pricing page view
+    trackGoogleAdsConversion('YOUR_PRICING_VIEW_CONVERSION_ID', 'YOUR_PRICING_VIEW_CONVERSION_LABEL');
+  },
 
   // Contact and support
   contactFormSubmitted: () => trackEvent({
